@@ -1,0 +1,9 @@
+# Names of the world(s) LibreLogin Next sends unauthenticated players to.
+# These must match the "limbo" list in LibreLogin Next's config.conf exactly.
+limbo-worlds:
+  - "limbo"
+
+# How many ticks to wait after PlayerJoinEvent before re-applying the saved
+# limbo position. This needs to run AFTER LibreLogin Next's own teleport to
+# limbo spawn, so a small delay (1-3 ticks) is safest. 20 ticks = 1 second.
+restore-delay-ticks: 2

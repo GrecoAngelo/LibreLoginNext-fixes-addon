@@ -1,0 +1,17 @@
+name: LimboPositionFix
+version: '1.0.0'
+main: dev.custom.limbopos.LimboPositionFix
+api-version: '1.21'
+author: you
+description: >
+  Remembers where a player was standing inside a limbo world and restores
+  that position on rejoin, instead of LibreLogin Next dropping them back
+  at limbo spawn every time.
+softdepend: [LibreLogin]
+commands:
+  limboposreload:
+    description: Reloads LimboPositionFix's config.yml
+    permission: limbopositionfix.reload
+permissions:
+  limbopositionfix.reload:
+    default: op
