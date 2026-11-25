@@ -1,66 +1,78 @@
 # LimboPositionFix
 
-Small standalone Paper plugin. Fixes the "I get teleported to limbo spawn
-every time I rejoin while not logged in" behavior from LibreLogin Next,
-without touching LibreLogin Next itself.
+[![Paper](https://img.shields.io/badge/Paper-1.21+-blue?style=flat-square)](https://papermc.io/)
+[![Java](https://img.shields.io/badge/Java-21-orange?style=flat-square)](https://adoptium.net/)
+[![LibreLogin Next](https://img.shields.io/badge/LibreLogin%20Next-Compatible-green?style=flat-square)](https://github.com/kyngs/LibreLogin)
+[![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](LICENSE)
+
+Standalone Paper plugin that prevents LibreLogin Next from resetting a player's coordinates to limbo spawn every time they reconnect while unauthenticated. Works without hooking into LibreLogin Next.
 
 ## How it works
-- On quit, if you're standing in a world listed under `limbo-worlds` in this
-  plugin's `config.yml`, your exact location is remembered in memory.
-- On join, a couple ticks after LibreLogin Next does its own
-  teleport-to-limbo-spawn, this plugin teleports you back to where you were.
-- The moment you leave the limbo world (i.e. you actually log in and get
-  sent to the real lobby/world), the saved location is discarded.
 
-It uses only standard Bukkit/Paper events (`PlayerQuitEvent`,
-`PlayerJoinEvent`, `PlayerChangedWorldEvent`) — it does **not** call
-LibreLogin Next's internal API, so it won't break if that API changes
-between LibreLogin Next versions.
+1. **Disconnect (`PlayerQuitEvent`):** If the player is in a world listed under `limbo-worlds` in `config.yml`, their exact location is cached in memory.
+2. **Reconnect (`PlayerJoinEvent`):** A few ticks after LibreLogin Next runs its spawn teleport, this plugin teleports the player back to their cached coordinates.
+3. **Authentication (`PlayerChangedWorldEvent`):** Once the player logs in and gets moved out of the limbo world, the cached location is cleared from memory.
 
-## IMPORTANT — read before installing
-This plugin tracks **worlds on a single Paper server**. That matches your
-config if you're running **Paper standalone** (limbo = a world on the same
-server as everything else).
+Because this only listens to standard Bukkit/Paper events, it will not break across LibreLogin Next API changes.
 
-If you're running **Velocity** with `limbo` as a *separate backend server*
-(a different Paper/Spigot process, not just a different world), this
-approach needs to change: `PlayerJoinEvent`/`PlayerChangedWorldEvent` only
-fire within one backend server, so you'd instead need to install this on
-the limbo backend specifically and detect "quit" as a server switch rather
-than a real disconnect. Let me know which setup you're on (standalone Paper
-vs. Velocity + separate limbo server) and I'll adjust it.
+## Compatibility Warning
 
-## Build
-Requires JDK 21.
+This plugin tracks **worlds on a single Paper server**.
 
-```bash
-./gradlew build
+* **Standalone Paper:** Supported out of the box if your limbo is a world on the same Paper instance as your main lobby/world.
+* **Velocity / BungeeCord (separate limbo server):** Not supported in this version. `PlayerJoinEvent` and `PlayerChangedWorldEvent` only fire within a single backend server. For proxy setups, the plugin would need to run on the limbo backend specifically and track proxy server switches instead of disconnects.
+
+## Installation
+
+1. Download `LimboPositionFix-1.0.0.jar` from [Releases](../../releases) or build it from source.
+2. Drop the jar into your `plugins/` directory alongside LibreLogin Next.
+3. Restart the server to generate `plugins/LimboPositionFix/config.yml`.
+4. Set `limbo-worlds` to match the exact world name(s) configured under `limbo` in LibreLogin Next's `config.conf`.
+5. Run `/limboposreload`.
+
+## Configuration
+
+```yaml
+# World names treated as limbo worlds.
+# Must match the limbo world(s) in LibreLogin Next's config.conf.
+limbo-worlds:
+  - "limbo"
+
+# Ticks to wait after join before restoring the saved position.
+# Increase this if LibreLogin Next's spawn teleport still overrides the position.
+restore-delay-ticks: 2
 ```
 
-The compiled jar will be at `build/libs/LimboPositionFix-1.0.0.jar`.
-(First open the project in your IDE or run `gradle wrapper` once if the
-`gradlew` wrapper scripts aren't present — this project only ships the
-Gradle config, not the wrapper binaries.)
+## Commands & Permissions
 
-Before building, open `build.gradle.kts` and make sure the `paper-api`
-version matches the Paper build your server runs (e.g. `1.21.4-R0.1-SNAPSHOT`).
+| Command | Description | Permission | Default |
+| :--- | :--- | :--- | :--- |
+| `/limboposreload` | Reloads `config.yml` without a restart. | `limbopositionfix.reload` | `OP` |
 
-## Install
-1. Drop the built jar into `plugins/` alongside LibreLogin Next.
-2. Edit `plugins/LimboPositionFix/config.yml` — `limbo-worlds` must list the
-   exact same world name(s) as LibreLogin Next's `limbo` setting in its own
-   `config.conf`.
-3. `/reload confirm` or restart.
+## Building from Source
 
-## Commands
-- `/limboposreload` (permission `limbopositionfix.reload`, op by default) —
-  reloads `config.yml` without a full restart.
+Requires **JDK 21**.
+
+1. Clone the repo:
+   ```bash
+   git clone [https://github.com/yourusername/LimboPositionFix.git](https://github.com/yourusername/LimboPositionFix.git)
+   cd LimboPositionFix
+   ```
+2. Open `build.gradle.kts` and verify the `paper-api` dependency version matches your server build (e.g. `1.21.4-R0.1-SNAPSHOT`).
+3. If the Gradle wrapper scripts are missing from your clone, generate them once:
+   ```bash
+   gradle wrapper
+   ```
+4. Build the jar:
+   ```bash
+   ./gradlew build
+   ```
+5. Output jar will be at `build/libs/LimboPositionFix-1.0.0.jar`.
 
 ## Notes
-- Saved positions are in-memory only; a server restart clears them (you'll
-  just land at limbo spawn once after a restart, same as before — not a
-  regression).
-- `restore-delay-ticks` in config.yml controls how long after join this
-  plugin waits before re-applying your saved position. 2 ticks is usually
-  enough; raise it if LibreLogin Next's own teleport is still winning the
-  race on your server.
+
+* Saved positions are kept in memory only. A server restart clears them, meaning players will land at limbo spawn once after a restart before tracking resumes.
+
+## License
+
+[MIT](LICENSE)
