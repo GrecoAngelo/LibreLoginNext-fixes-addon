@@ -1,6 +1,6 @@
 # LimboPositionFix
 
-[![Paper](https://img.shields.io/badge/Paper-1.21+-blue?style=flat-square)](https://papermc.io/)
+[![Paper](https://img.shields.io/badge/Paper-26.3+-blue?style=flat-square)](https://papermc.io/)
 [![Java](https://img.shields.io/badge/Java-21-orange?style=flat-square)](https://adoptium.net/)
 [![LibreLogin Next](https://img.shields.io/badge/LibreLogin%20Next-Compatible-green?style=flat-square)](https://github.com/kyngs/LibreLogin)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](LICENSE)
